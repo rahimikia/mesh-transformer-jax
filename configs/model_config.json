@@ -30,6 +30,8 @@
     "owt": "openwebtext2_new_inputs.val.index"
   },
 
+  "eval_harness_tasks": [
+  ],
 
   "val_batches": 100,
   "val_every": 990000,
