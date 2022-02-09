@@ -21,10 +21,10 @@
 
   "tpu_size": 8,
 
-  "bucket": "your-bucket",
-  "model_dir": "finetune_dir",
+  "bucket": "nlp-project0",
+  "model_dir": "finetuned_saved",
 
-  "train_set": "example.train.index",
+  "train_set": "foo.train.index",
   "val_set": {},
 
   "eval_harness_tasks": [
