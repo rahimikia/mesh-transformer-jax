@@ -420,7 +420,7 @@ for ticker in TICKERS:
                 if step == total_steps:
                     print("training completed!")
                     # exit()
-                    sasdds
+                    pass
     
                 start = time.time()
                 loss, last_loss, grad_norm, grad_norm_micro = train_step(
