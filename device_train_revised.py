@@ -6,7 +6,7 @@ import jax
 import numpy as np
 import optax
 
-import wandb
+# import wandb
 from tqdm import tqdm
 
 
@@ -85,7 +85,7 @@ for ticker in TICKERS:
       "tpu_size": 8,
     
       "bucket": "nlp-project0",
-      "model_dir": "finetuned_models_stage_1/" + ticker + '/' + str(year)  + '/',
+      "model_dir": "finetuned_models_stage_1/" + ticker + '/' + str(year),
     
       "train_set": "foo.train.index",
       "val_set": {},
@@ -388,8 +388,8 @@ for ticker in TICKERS:
                 val_set.reset()
             print(f"Eval fn compiled in {time.time() - start:.06}s")
     
-            project = params.get("wandb_project", "mesh-transformer-jax")
-            wandb.init(project=project, name=params["name"], config=params)
+            # project = params.get("wandb_project", "mesh-transformer-jax")
+            # wandb.init(project=project, name=params["name"], config=params)
     
             G_noise_avg = None
             S_noise_avg = None
@@ -415,7 +415,7 @@ for ticker in TICKERS:
                         val_loss = np.array(val_loss).mean()
                         print(f"validation loss for step {step}, set {name}: {val_loss}")
     
-                        wandb.log({f'val/loss_{name}': float(val_loss)}, step)
+                        # wandb.log({f'val/loss_{name}': float(val_loss)}, step)
     
                 if step == total_steps:
                     print("training completed!")
@@ -439,59 +439,59 @@ for ticker in TICKERS:
                 #
                 # (when taking gradient steps, the same conversion happens inside the optimizer
                 #  via optax.scale(1 / gradient_accumulation_steps))
-                grad_norm = grad_norm / gradient_accumulation_steps
+                # grad_norm = grad_norm / gradient_accumulation_steps
     
                 # compute G_noise and S_noise
                 # from "An Empirical Model of Large-Batch Training" Appendix A.1
                 # here, B_big = gradient_accumulation_steps, and B_small = 1 for convenience
-                gbsmall = grad_norm_micro ** 2
-                gbbig = grad_norm ** 2
-                G_noise = (gradient_accumulation_steps * gbbig - gbsmall) / (
-                    gradient_accumulation_steps - 1
-                )
-                S_noise = (gbsmall - gbbig) / (1 - 1 / gradient_accumulation_steps)
+                # gbsmall = grad_norm_micro ** 2
+                # gbbig = grad_norm ** 2
+                # G_noise = (gradient_accumulation_steps * gbbig - gbsmall) / (
+                #     gradient_accumulation_steps - 1
+                # )
+                # S_noise = (gbsmall - gbbig) / (1 - 1 / gradient_accumulation_steps)
     
-                noise_scale_stats = {
-                    "noise/G_noise": G_noise,
-                    "noise/S_noise": S_noise,
-                }
+                # noise_scale_stats = {
+                #     "noise/G_noise": G_noise,
+                #     "noise/S_noise": S_noise,
+                # }
     
                 # heuristic to avoid reporting G_noise in very early training when gradients are large
                 # (these take a long time to wash out of the moving average that defines B_simple)
-                use_step_in_noise_avgs = gbbig < 2
+                # use_step_in_noise_avgs = gbbig < 2
     
-                if use_step_in_noise_avgs:
-                    # compute moving averages of G_noise and S_noise, for B_simple
-                    if G_noise_avg is None:
-                        G_noise_avg = G_noise
-                    else:
-                        G_noise_avg = (1 - noise_scale_alpha) * G_noise_avg + noise_scale_alpha * G_noise
+                # if use_step_in_noise_avgs:
+                #     # compute moving averages of G_noise and S_noise, for B_simple
+                #     if G_noise_avg is None:
+                #         G_noise_avg = G_noise
+                #     else:
+                #         G_noise_avg = (1 - noise_scale_alpha) * G_noise_avg + noise_scale_alpha * G_noise
     
-                    if S_noise_avg is None:
-                        S_noise_avg = S_noise
-                    else:
-                        S_noise_avg = (1 - noise_scale_alpha) * S_noise_avg + noise_scale_alpha * S_noise
+                #     if S_noise_avg is None:
+                #         S_noise_avg = S_noise
+                #     else:
+                #         S_noise_avg = (1 - noise_scale_alpha) * S_noise_avg + noise_scale_alpha * S_noise
     
-                    B_simple = S_noise_avg / G_noise_avg
+                #     B_simple = S_noise_avg / G_noise_avg
     
-                    noise_scale_stats.update(
-                        {
-                            "noise/G_noise_avg": G_noise_avg,
-                            "noise/S_noise_avg": S_noise_avg,
-                            "noise/B_simple": B_simple,
-                        }
-                    )
+                #     noise_scale_stats.update(
+                #         {
+                #             "noise/G_noise_avg": G_noise_avg,
+                #             "noise/S_noise_avg": S_noise_avg,
+                #             "noise/B_simple": B_simple,
+                #         }
+                #     )
     
-                wandb_stats = {
-                    "train/loss": loss,
-                    "train/last_loss": last_loss,
-                    "train/steps_per_sec": steps_per_sec,
-                    "train/tokens_per_sec": tokens_per_sec,
-                    "train/grad_norm": grad_norm,
-                    "train/learning_rate": float(scheduler(network.state["opt_state"][-1].count[0].item())),
-                    "sequences_processed": sequences_processed,
-                    "tokens_processed": tokens_processed,
-                }
-                wandb_stats.update(noise_scale_stats)
+                # wandb_stats = {
+                #     "train/loss": loss,
+                #     "train/last_loss": last_loss,
+                #     "train/steps_per_sec": steps_per_sec,
+                #     "train/tokens_per_sec": tokens_per_sec,
+                #     "train/grad_norm": grad_norm,
+                #     "train/learning_rate": float(scheduler(network.state["opt_state"][-1].count[0].item())),
+                #     "sequences_processed": sequences_processed,
+                #     "tokens_processed": tokens_processed,
+                # }
+                # wandb_stats.update(noise_scale_stats)
     
-                wandb.log(wandb_stats, step)
+                # wandb.log(wandb_stats, step)
