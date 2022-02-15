@@ -42,7 +42,7 @@ from mesh_transformer.util import clip_by_global_norm, additive_weight_decay
 # TICKERS = ['MRK', 'BEL_VZ', 'AIG', 'PEP', 'JNJ', 'XOM', 'ORCL', 'DIS', 'AMGN', 'AMZN', 'AXP', 'WAG_WBA', 'BMY', 'BPA_BP', 'CMCSA', 'CVS']
 # TICKERS = ['DD', 'GILD', 'GS', 'OXY', 'HD', 'MCD', 'MDT', 'MMM', 'BA', 'MWD_MS', 'NAN', 'QCOM', 'RY', 'SLB', 'TXN', 'UNH', 'UPS', 'USB']
 				
-TICKERS = ['MAZN', 'JNJ']
+TICKERS = ['AMZN', 'JNJ']
 
 								
 
