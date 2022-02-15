@@ -52,8 +52,14 @@ for ticker in TICKERS:
     
     ### Model config (from json file).
 
-    train_set_file = ['gs://nlp-project0/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords']
+    txt_train_path = 'gs://nlp-project0/data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords'
     model_name = ticker + '_' + str(year)
+    
+    
+    ## Modify train test file.
+    
+    with open("gs://nlp-project0/data/GPTJ_data/foo.train.index","w") as docA:
+        data = docA.write(txt_train_path)
     
     params = {
       "layers": 28,
@@ -81,7 +87,7 @@ for ticker in TICKERS:
       "bucket": "nlp-project0",
       "model_dir": "finetuned_models_stage_1/" + ticker + '/' + str(year)  + '/',
     
-      "train_set": "",
+      "train_set": "foo.train.index",
       "val_set": {},
     
       "eval_harness_tasks": [
@@ -324,19 +330,13 @@ for ticker in TICKERS:
         # set up datasets
         print("setting up datasets")
     
-        # train_dataset = TFRecordNewInputs(f"data/{params['train_set']}",
-        #                                   batch_size=(
-        #                                       gradient_accumulation_steps,
-        #                                       per_replica_batch * tpu_size // cores_per_replica),
-        #                                   sample_size=params['seq'],
-        #                                   restore_state=train_loader)
-    
-        train_dataset = TFRecordNewInputs(f"{params['train_set']}",
+        train_dataset = TFRecordNewInputs(f"data/{params['train_set']}",
                                           batch_size=(
                                               gradient_accumulation_steps,
                                               per_replica_batch * tpu_size // cores_per_replica),
                                           sample_size=params['seq'],
                                           restore_state=train_loader)
+    
     
         global_val_batch = per_replica_batch * tpu_size // cores_per_replica
     
