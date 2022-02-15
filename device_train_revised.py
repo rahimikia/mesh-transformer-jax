@@ -422,7 +422,8 @@ for ticker in TICKERS:
                     # exit()
                     break
                 
-                
+                continue
+              
                 # start = time.time()
                 # loss, last_loss, grad_norm, grad_norm_micro = train_step(
                 #     network, train_dataset.get_samples()
