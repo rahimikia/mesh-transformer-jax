@@ -420,18 +420,19 @@ for ticker in TICKERS:
                 if step == total_steps:
                     print("training completed!")
                     # exit()
-                    pass
+                    break
+                
+                
+                # start = time.time()
+                # loss, last_loss, grad_norm, grad_norm_micro = train_step(
+                #     network, train_dataset.get_samples()
+                # )
+                # step += 1
     
-                start = time.time()
-                loss, last_loss, grad_norm, grad_norm_micro = train_step(
-                    network, train_dataset.get_samples()
-                )
-                step += 1
-    
-                steps_per_sec = 1 / (time.time() - start)
-                tokens_per_sec = tokens_per_step * steps_per_sec
-                sequences_processed = sequences_per_step * step
-                tokens_processed = tokens_per_step * step
+                # steps_per_sec = 1 / (time.time() - start)
+                # tokens_per_sec = tokens_per_step * steps_per_sec
+                # sequences_processed = sequences_per_step * step
+                # tokens_processed = tokens_per_step * step
     
                 ### compute summary stats about the gradient
     
