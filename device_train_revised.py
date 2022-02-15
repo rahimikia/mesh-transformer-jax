@@ -13,7 +13,7 @@ from tqdm import tqdm
 from mesh_transformer import util
 from mesh_transformer.checkpoint import read_ckpt, write_ckpt
 from mesh_transformer.transformer_shard import CausalTransformer
-from tfrecord_loader_revised import TFRecordNewInputs
+from tfrecord_loader import TFRecordNewInputs
 from smart_open import open
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
