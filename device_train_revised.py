@@ -58,7 +58,7 @@ for ticker in TICKERS:
     
     ## Modify train test file.
     
-    with open("gs://nlp-project0/data/GPTJ_data/foo.train.index","w") as docA:
+    with open("gs://nlp-project0/data/foo.train.index","w") as docA:
         data = docA.write(txt_train_path)
     
     params = {
