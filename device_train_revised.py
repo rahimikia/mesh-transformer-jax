@@ -393,7 +393,7 @@ for ticker in TICKERS:
     
             G_noise_avg = None
             S_noise_avg = None
-    
+            print('step1: ' + str(step))
             while True:
                 if (step % ckpt_every == 1) or step == total_steps:
                     print(f"saving a checkpoint for step {step}")
@@ -416,13 +416,13 @@ for ticker in TICKERS:
                         print(f"validation loss for step {step}, set {name}: {val_loss}")
     
                         # wandb.log({f'val/loss_{name}': float(val_loss)}, step)
-    
+                print('step2: ' + str(step))
                 if step == total_steps:
                     print("training completed!")
                     # exit()
                     break
                 
-                continue
+                # continue
               
                 # start = time.time()
                 # loss, last_loss, grad_norm, grad_norm_micro = train_step(
