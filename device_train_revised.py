@@ -13,7 +13,7 @@ from tqdm import tqdm
 from mesh_transformer import util
 from mesh_transformer.checkpoint import read_ckpt, write_ckpt
 from mesh_transformer.transformer_shard import CausalTransformer
-from tfrecord_loader import TFRecordNewInputs
+from tfrecord_loader_revised import TFRecordNewInputs
 from smart_open import open
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
@@ -87,7 +87,7 @@ for ticker in TICKERS:
       "bucket": "nlp-project0",
       "model_dir": "finetuned_models_stage_1/" + ticker + '/' + str(year)  + '/',
     
-      "train_set": "foo.train.index",
+      "train_set": "gs://nlp-project0/data/foo.train.index",
       "val_set": {},
     
       "eval_harness_tasks": [
@@ -330,7 +330,7 @@ for ticker in TICKERS:
         # set up datasets
         print("setting up datasets")
     
-        train_dataset = TFRecordNewInputs(f"data/{params['train_set']}",
+        train_dataset = TFRecordNewInputs(f"{params['train_set']}",
                                           batch_size=(
                                               gradient_accumulation_steps,
                                               per_replica_batch * tpu_size // cores_per_replica),
