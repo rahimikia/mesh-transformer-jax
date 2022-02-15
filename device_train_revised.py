@@ -17,6 +17,7 @@ from tfrecord_loader import TFRecordNewInputs
 from smart_open import open
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
+import tensorflow as tf
 
 from mesh_transformer.util import clip_by_global_norm, additive_weight_decay
 
@@ -429,6 +430,13 @@ for ticker in TICKERS:
                 #     network, train_dataset.get_samples()
                 # )
                 step += 1
+                
+                
+                del network
+                # hw_accelerator_handle = tf.distribute.cluster_resolver.TPUClusterResolver()
+                # tf.tpu.experimental.initialize_tpu_system(hw_accelerator_handle)
+                
+                
             # continue
                 # steps_per_sec = 1 / (time.time() - start)
                 # tokens_per_sec = tokens_per_step * steps_per_sec
