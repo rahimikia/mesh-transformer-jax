@@ -428,8 +428,8 @@ for ticker in TICKERS:
                 # loss, last_loss, grad_norm, grad_norm_micro = train_step(
                 #     network, train_dataset.get_samples()
                 # )
-                # step += 1
-    
+                step += 1
+            # continue
                 # steps_per_sec = 1 / (time.time() - start)
                 # tokens_per_sec = tokens_per_step * steps_per_sec
                 # sequences_processed = sequences_per_step * step
