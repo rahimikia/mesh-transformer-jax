@@ -1,15 +1,10 @@
 import argparse
 import json
 import time
-
 import jax
 import numpy as np
 import optax
-
-# import wandb
 from tqdm import tqdm
-
-
 from mesh_transformer import util
 from mesh_transformer.checkpoint import read_ckpt, write_ckpt
 from mesh_transformer.transformer_shard import CausalTransformer
@@ -17,9 +12,7 @@ from tfrecord_loader import TFRecordNewInputs
 from smart_open import open
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
-import tensorflow as tf
-
-from mesh_transformer.util import clip_by_global_norm, additive_weight_decay
+from mesh_transformer.util import clip_by_global_norm, additive_weight_decay, to_bf16, to_f16
 
 
 
@@ -49,7 +42,7 @@ TICKERS = ['AMZN', 'JNJ']
 
 for ticker in TICKERS:
   print('Transforming:' + ticker)
-  for year in np.arange(2005,2007):
+  for year in np.arange(2005,2006):
     
     ### Model config (from json file).
 
@@ -433,76 +426,73 @@ for ticker in TICKERS:
                 
                 
             del network
-                # hw_accelerator_handle = tf.distribute.cluster_resolver.TPUClusterResolver()
-                # tf.tpu.experimental.initialize_tpu_system(hw_accelerator_handle)
+
                 
-                
-            # continue
-                # steps_per_sec = 1 / (time.time() - start)
-                # tokens_per_sec = tokens_per_step * steps_per_sec
-                # sequences_processed = sequences_per_step * step
-                # tokens_processed = tokens_per_step * step
+    #### -------------------------------- Slim model -----------------------------------
+
+    def parse_args_2():
+        # Parse command line arguments
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--config", type=str, default=None, help="Config file location")
+        parser.add_argument("--ckpt-step", type=int, default=-1, help="Step number of the checkpoint to convert (if not specified, converts the most recent checkpoint)")
+        parser.add_argument("--f16", default=False, action="store_true", help="Convert to float16 (instead of bfloat16)")
     
-                ### compute summary stats about the gradient
+        args = parser.parse_args()
+        return args
+
+    if __name__ == "__main__":
+        args = parse_args_2()
+        # params = json.load(open(args.config))
+        convert_fn = to_f16 if args.f16 else to_bf16
     
-                # converts from grads-summed-over-microbatch (what `CasualTransformer.train` computes)
-                # to grads-averaged-over-microbatch (what we want)
-                #
-                # (when taking gradient steps, the same conversion happens inside the optimizer
-                #  via optax.scale(1 / gradient_accumulation_steps))
-                # grad_norm = grad_norm / gradient_accumulation_steps
+        cores_per_replica = params["cores_per_replica"]
     
-                # compute G_noise and S_noise
-                # from "An Empirical Model of Large-Batch Training" Appendix A.1
-                # here, B_big = gradient_accumulation_steps, and B_small = 1 for convenience
-                # gbsmall = grad_norm_micro ** 2
-                # gbbig = grad_norm ** 2
-                # G_noise = (gradient_accumulation_steps * gbbig - gbsmall) / (
-                #     gradient_accumulation_steps - 1
-                # )
-                # S_noise = (gbsmall - gbbig) / (1 - 1 / gradient_accumulation_steps)
+        assert cores_per_replica <= 8
     
-                # noise_scale_stats = {
-                #     "noise/G_noise": G_noise,
-                #     "noise/S_noise": S_noise,
-                # }
+        bucket = params["bucket"]
+        model_dir = params["model_dir"]
     
-                # heuristic to avoid reporting G_noise in very early training when gradients are large
-                # (these take a long time to wash out of the moving average that defines B_simple)
-                # use_step_in_noise_avgs = gbbig < 2
+        params["optimizer"] = optax.chain(
+            optax.scale(1),
+            clip_by_global_norm(1),
+            optax.scale_by_adam(),
+            optax.additive_weight_decay(0),
+            optax.scale(-1),
+            optax.scale_by_schedule(util.gpt3_schedule(0, 1, 0, 0))
+        )
     
-                # if use_step_in_noise_avgs:
-                #     # compute moving averages of G_noise and S_noise, for B_simple
-                #     if G_noise_avg is None:
-                #         G_noise_avg = G_noise
-                #     else:
-                #         G_noise_avg = (1 - noise_scale_alpha) * G_noise_avg + noise_scale_alpha * G_noise
+        start = time.time()
+        print(f"jax devices: {jax.device_count()}")
+        print(f"jax runtime initialized in {time.time() - start:.06}s")
     
-                #     if S_noise_avg is None:
-                #         S_noise_avg = S_noise
-                #     else:
-                #         S_noise_avg = (1 - noise_scale_alpha) * S_noise_avg + noise_scale_alpha * S_noise
+        mesh_shape = (jax.device_count() // cores_per_replica, cores_per_replica)
+        devices = np.array(jax.devices()).reshape(mesh_shape)
     
-                #     B_simple = S_noise_avg / G_noise_avg
+        with open(f"gs://{bucket}/{model_dir}/meta.json", "r") as f:
+            meta = json.load(f)
     
-                #     noise_scale_stats.update(
-                #         {
-                #             "noise/G_noise_avg": G_noise_avg,
-                #             "noise/S_noise_avg": S_noise_avg,
-                #             "noise/B_simple": B_simple,
-                #         }
-                #     )
+        if args.ckpt_step > -1:
+            ckpt_step = args.ckpt_step
+        else:
+            ckpt_step = meta["checkpoints"][-1]
+        print(f"using checkpoint {ckpt_step}")
     
-                # wandb_stats = {
-                #     "train/loss": loss,
-                #     "train/last_loss": last_loss,
-                #     "train/steps_per_sec": steps_per_sec,
-                #     "train/tokens_per_sec": tokens_per_sec,
-                #     "train/grad_norm": grad_norm,
-                #     "train/learning_rate": float(scheduler(network.state["opt_state"][-1].count[0].item())),
-                #     "sequences_processed": sequences_processed,
-                #     "tokens_processed": tokens_processed,
-                # }
-                # wandb_stats.update(noise_scale_stats)
+        with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
+            network = CausalTransformer(params)
     
-                # wandb.log(wandb_stats, step)
+            start = time.time()
+            network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1])
+            print(f"network loaded in {time.time() - start:.06}s")
+    
+            start = time.time()
+            del network.state["opt_state"]
+    
+            network.state["params"] = convert_fn(network.state["params"])
+            print(f"network converted in {time.time() - start:.06}s")
+    
+            suffix = "_slim_f16" if args.f16 else "_slim"
+    
+            for i in range(cores_per_replica):
+                write_ckpt(network.state, f"gs://{bucket}/{model_dir}{suffix}/step_{ckpt_step}/", i)
+                print(f"written shard {i}")
+
