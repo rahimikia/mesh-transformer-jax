@@ -78,8 +78,8 @@ def process_args(
     input_ckpt,
     config,
     output_path,
-    dtype: str = "fp16",
-    cpu: bool = False,
+    dtype,
+    cpu,
     **kwargs,
 ):
     # validate paths and turn them into Pathy paths.
