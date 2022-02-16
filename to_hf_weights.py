@@ -74,14 +74,7 @@ parser.add_argument(
 )
 
 
-def process_args(
-    input_ckpt: FluidPath,
-    config: FluidPath,
-    output_path: FluidPath,
-    dtype: str = "fp16",
-    cpu: bool = False,
-    **kwargs,
-):
+def process_args():
     # validate paths and turn them into Pathy paths.
     input_ckpt = Pathy.fluid(str(input_ckpt))
     assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
