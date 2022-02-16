@@ -79,9 +79,7 @@ def process_args(
     config,
     output_path,
     dtype,
-    cpu,
-    **kwargs,
-):
+    cpu):
     # validate paths and turn them into Pathy paths.
     input_ckpt = Pathy.fluid(str(input_ckpt))
     assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
