@@ -75,9 +75,9 @@ parser.add_argument(
 
 
 def process_args(
-    input_ckpt: Union[FluidPath, str],
-    config: Union[FluidPath, str],
-    output_path: Union[FluidPath, str],
+    input_ckpt: FluidPath,
+    config: FluidPath,
+    output_path: FluidPath,
     dtype: str = "fp16",
     cpu: bool = False,
     **kwargs,
