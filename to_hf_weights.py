@@ -31,87 +31,98 @@ os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
 
 DEBUG = False
 
-parser = argparse.ArgumentParser(
-    description=(
-        "Used to turn a sharded trained gpt-j checkpoint into pytorch hugging face format."
-        "This script works best on a slimmed checkpoint (full checkpoints can be used but require ~100gb of ram)."
-        "Currently, weights must be split into 8 shards for this to work."
-        "All paths can be local or google cloud storage paths. S3 paths supported as well with `pip install pathy[s3]`."
-        "Can be run on tpu, or on gpu with `pip install --upgrade jax==0.2.12 jaxlib==0.1.67+cuda110 -f https://storage.googleapis.com/jax-releases/jax_releases.html`"
-    )
-)
-parser.add_argument(
-    "--input-ckpt",
-    type=str,
-    required=True,
-    help='path to model checkpoint folder. Google storage can be used with "gs://bucket/path/step_{n}" format.',
-    metavar="path",
-)
-parser.add_argument(
-    "--config", type=str, required=True, help="Config file location", metavar="path"
-)
-parser.add_argument(
-    "--output-path",
-    required=True,
-    type=str,
-    help='Full path to save checkpoint to. Google storage can be used with "gs://bucket/path" format.',
-)
-parser.add_argument(
-    "--debug",
-    action="store_true",
-    help="Verbose printing.",
-)
-parser.add_argument(
-    "--cpu",
-    action="store_true",
-    help="Run resharding on cpu instead of searching for jax device (i.e. gpu/tpu). Will default to cpu if jax wasn't installed with `+cuda110` option",
-)
-parser.add_argument(
-    "--dtype",
-    type=str,
-    default="fp16",
-    help="One of fp32, fp16 or bf16. Default=fp16. WARNING: Experimental. Make sure to check weights after conversion to make sure dtype information is retained.",
-)
+# parser = argparse.ArgumentParser(
+#     description=(
+#         "Used to turn a sharded trained gpt-j checkpoint into pytorch hugging face format."
+#         "This script works best on a slimmed checkpoint (full checkpoints can be used but require ~100gb of ram)."
+#         "Currently, weights must be split into 8 shards for this to work."
+#         "All paths can be local or google cloud storage paths. S3 paths supported as well with `pip install pathy[s3]`."
+#         "Can be run on tpu, or on gpu with `pip install --upgrade jax==0.2.12 jaxlib==0.1.67+cuda110 -f https://storage.googleapis.com/jax-releases/jax_releases.html`"
+#     )
+# )
+# parser.add_argument(
+#     "--input-ckpt",
+#     type=str,
+#     required=True,
+#     help='path to model checkpoint folder. Google storage can be used with "gs://bucket/path/step_{n}" format.',
+#     metavar="path",
+# )
+# parser.add_argument(
+#     "--config", type=str, required=True, help="Config file location", metavar="path"
+# )
+# parser.add_argument(
+#     "--output-path",
+#     required=True,
+#     type=str,
+#     help='Full path to save checkpoint to. Google storage can be used with "gs://bucket/path" format.',
+# )
+# parser.add_argument(
+#     "--debug",
+#     action="store_true",
+#     help="Verbose printing.",
+# )
+# parser.add_argument(
+#     "--cpu",
+#     action="store_true",
+#     help="Run resharding on cpu instead of searching for jax device (i.e. gpu/tpu). Will default to cpu if jax wasn't installed with `+cuda110` option",
+# )
+# parser.add_argument(
+#     "--dtype",
+#     type=str,
+#     default="fp16",
+#     help="One of fp32, fp16 or bf16. Default=fp16. WARNING: Experimental. Make sure to check weights after conversion to make sure dtype information is retained.",
+# )
 
 
-def process_args(
-    input_ckpt,
-    config,
-    output_path,
-    dtype,
-    cpu):
-    # validate paths and turn them into Pathy paths.
-    input_ckpt = Pathy.fluid(str(input_ckpt))
-    assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
-    config = Pathy.fluid(str(config))
-    assert config.is_file(), f'no such file "{config}"'
-    first_shard = input_ckpt / "shard_0"
-    assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
+# def process_args(
+#     input_ckpt: Union[FluidPath, str],
+#     config: Union[FluidPath, str],
+#     output_path: Union[FluidPath, str],
+#     dtype: str = "fp16",
+#     cpu: bool = False,
+#     **kwargs,
+# ):
+#     # validate paths and turn them into Pathy paths.
+#     input_ckpt = Pathy.fluid(str(input_ckpt))
+#     assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
+#     config = Pathy.fluid(str(config))
+#     assert config.is_file(), f'no such file "{config}"'
+#     first_shard = input_ckpt / "shard_0"
+#     assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
 
-    output_path = Pathy.fluid(str(output_path))
-    output_path.mkdir(exist_ok=True)
+#     output_path = Pathy.fluid(str(output_path))
+#     output_path.mkdir(exist_ok=True)
 
-    # make sure dtype is valid
-    assert dtype in {"fp16", "fp32", "bf16"}
-    np_dtype = np.float16
-    torch_dtype = torch.float16
-    if dtype != "fp16":
-        warnings.warn(
-            "WARNING: Dtype support other than fp16 is Experimental. Make sure to check weights after conversion to make sure dtype information is retained."
-        )
-        if dtype == "bf16":
-            # np doesn't have bfloat16 so float32 is used to retain information before converting to torch.
-            np_dtype = np.float32
-            torch_dtype = torch.bfloat16
-        elif dtype == "fp32":
-            np_dtype = np.float32
-            torch_dtype = torch.float32
+#     # make sure dtype is valid
+#     # assert dtype in {"fp16", "fp32", "bf16"}
+#     # np_dtype = np.float16
+#     # torch_dtype = torch.float16
+#     # if dtype != "fp16":
+#     #     warnings.warn(
+#     #         "WARNING: Dtype support other than fp16 is Experimental. Make sure to check weights after conversion to make sure dtype information is retained."
+#     #     )
+#     #     if dtype == "bf16":
+#     #         # np doesn't have bfloat16 so float32 is used to retain information before converting to torch.
+#     #         np_dtype = np.float32
+#     #         torch_dtype = torch.bfloat16
+#     #     elif dtype == "fp32":
+#     #         np_dtype = np.float32
+#     #         torch_dtype = torch.float32
 
-    # tell jax to run on cpu instead of gpu/tpu
-    if cpu:
-        jax.config.update("jax_platform_name", "cpu")
+#     # # tell jax to run on cpu instead of gpu/tpu
+#     # if cpu:
+#     #     jax.config.update("jax_platform_name", "cpu")
 
-    return input_ckpt, config, output_path, np_dtype, torch_dtype
+#     return input_ckpt, config, output_path, np_dtype, torch_dtype
+
+
+input_ckpt = Pathy.fluid(str('gs://nlp-project0/finetuned_models_stage_1/AMZN/2005_slim/step_72'))
+output_path = Pathy.fluid(str('gs://nlp-project0/cccc'))
+output_path.mkdir(exist_ok=True)
+
+jax.config.update("jax_platform_name", "cpu")
+np_dtype = np.float16
+torch_dtype = torch.float16
 
 
 def tree_flatten_with_names(pytree, is_leaf, path="", to_id=id):
@@ -474,13 +485,13 @@ def save_sharded_to_hf_format(
 
 
 if __name__ == "__main__":
-    args = vars(parser.parse_args())
+    # args = vars(parser.parse_args())
 
-    DEBUG = args["debug"]
+    # DEBUG = args["debug"]
     start = time.time()
 
-    input_ckpt, config, output_path, np_dtype, torch_dtype = process_args(**args)
-    params = json.load(open(config))
+    # input_ckpt, config, output_path, np_dtype, torch_dtype = process_args(**args)
+    # params = json.load(open(config))
     params["optimizer"] = optax.scale(0)
 
     save_sharded_to_hf_format(input_ckpt, params, output_path, np_dtype, torch_dtype)
