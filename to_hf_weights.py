@@ -75,24 +75,26 @@ parser.add_argument(
 
 
 def process_args(
-    input_ckpt,
-    config,
-    output_path,
-    dtype,
-    cpu):
+    input_ckpt: Union[FluidPath, str],
+    config: Union[FluidPath, str],
+    output_path: Union[FluidPath, str],
+    dtype: str = "fp16",
+    cpu: bool = False,
+    **kwargs,
+):
     # validate paths and turn them into Pathy paths.
     input_ckpt = Pathy.fluid(str(input_ckpt))
-    # assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
+    assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
     config = Pathy.fluid(str(config))
-    # assert config.is_file(), f'no such file "{config}"'
+    assert config.is_file(), f'no such file "{config}"'
     first_shard = input_ckpt / "shard_0"
-    # assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
+    assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
 
     output_path = Pathy.fluid(str(output_path))
     output_path.mkdir(exist_ok=True)
 
     # make sure dtype is valid
-    # assert dtype in {"fp16", "fp32", "bf16"}
+    assert dtype in {"fp16", "fp32", "bf16"}
     np_dtype = np.float16
     torch_dtype = torch.float16
     if dtype != "fp16":
@@ -368,7 +370,7 @@ def save_pytree_as_hf(
     ):
 
         # load next shard with correstponding leave name and old shape
-        x = next(loaded_shards_in) 
+        x = next(loaded_shards_in)
         leave_name = leave_names[i]
         old_shape = old_leave_shapes[i]
         hf_layer_id = leave_name_to_hf_layer_id(leave_name)
