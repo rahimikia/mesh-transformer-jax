@@ -82,17 +82,17 @@ def process_args(
     cpu):
     # validate paths and turn them into Pathy paths.
     input_ckpt = Pathy.fluid(str(input_ckpt))
-    assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
+    # assert input_ckpt.is_dir(), f'no such directory "{input_ckpt}"'
     config = Pathy.fluid(str(config))
-    assert config.is_file(), f'no such file "{config}"'
+    # assert config.is_file(), f'no such file "{config}"'
     first_shard = input_ckpt / "shard_0"
-    assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
+    # assert first_shard.is_dir(), f'no shards found at "{input_ckpt}"'
 
     output_path = Pathy.fluid(str(output_path))
     output_path.mkdir(exist_ok=True)
 
     # make sure dtype is valid
-    assert dtype in {"fp16", "fp32", "bf16"}
+    # assert dtype in {"fp16", "fp32", "bf16"}
     np_dtype = np.float16
     torch_dtype = torch.float16
     if dtype != "fp16":
