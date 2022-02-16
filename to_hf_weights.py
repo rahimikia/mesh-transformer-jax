@@ -125,7 +125,7 @@ np_dtype = np.float16
 torch_dtype = torch.float16
 
 
-def tree_flatten_with_names(pytree, is_leaf, path="", to_id=id):
+def tree_flatten_with_names(pytree, is_leaf, path="gs://nlp-project0/finetuned_models_stage_1/AMZN/2005_slim/step_72", to_id=id):
     id_to_name = {}
     if getattr(pytree, "items", None):
         for k, v in pytree.items():
