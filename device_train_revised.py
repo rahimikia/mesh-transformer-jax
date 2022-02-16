@@ -432,7 +432,7 @@ for ticker in TICKERS:
                 step += 1
                 
                 
-                del network
+            del network
                 # hw_accelerator_handle = tf.distribute.cluster_resolver.TPUClusterResolver()
                 # tf.tpu.experimental.initialize_tpu_system(hw_accelerator_handle)
                 
