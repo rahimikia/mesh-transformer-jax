@@ -583,7 +583,7 @@ for ticker in TICKERS:
         config: Union[FluidPath, str],
         output_path: Union[FluidPath, str],
         dtype: str = "fp16",
-        cpu: bool = False,
+        cpu: bool = True,
         **kwargs,
     ):
         # validate paths and turn them into Pathy paths.
