@@ -525,7 +525,7 @@ for ticker in TICKERS:
     
     
  
-    input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/'
+    input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_72/'
     output_check_point_path = 'gs://nlp-project0/finetuned_models/' + ticker + '/' + str(year) + '/'
     
     # xla: tell jax to not pre allocate all device memory
