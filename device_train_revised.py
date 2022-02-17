@@ -51,7 +51,7 @@ TICKERS = ['AAPL', 'AIG', 'AMGN', 'AMZN', 'AXP']
 
 for ticker in TICKERS:
   print('Transforming:' + ticker)
-  for year in np.arange(2005,2006):
+  for year in np.arange(2005,2019):
     
     ### Model config (from json file).
 
