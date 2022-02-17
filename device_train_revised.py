@@ -514,7 +514,7 @@ for ticker in TICKERS:
 
     storage_client_1 = storage.Client()
     bucket_1 = storage_client_1.get_bucket('nlp-project0')
-    blobs_1 = bucket_1.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year))
+    blobs_1 = bucket_1.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '/')
     
     for blob in blobs_1:
       blob.delete()
