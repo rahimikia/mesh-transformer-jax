@@ -989,7 +989,7 @@ for ticker in TICKERS:
         # params = json.load(open(config))
         params["optimizer"] = optax.scale(0)
         
-        del network
+        # del network
         
         save_sharded_to_hf_format(input_ckpt, params, output_path, np_dtype, torch_dtype)
         save_config_to_hf_format(params, torch_dtype, output_path)
