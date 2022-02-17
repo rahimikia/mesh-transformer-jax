@@ -434,7 +434,7 @@ for ticker in TICKERS:
                 step += 1
                 
                 
-            # del network ###################################################
+            del network
 
                 
     #### -------------------------------- Slim model -----------------------------------
@@ -487,11 +487,11 @@ for ticker in TICKERS:
         print(f"using checkpoint {ckpt_step}")
     
         with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
-            # network = CausalTransformer(params)
+            network = CausalTransformer(params)
     
             start = time.time()
-            # network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1]) ###################################################
-            # print(f"network loaded in {time.time() - start:.06}s")
+            network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1])
+            print(f"network loaded in {time.time() - start:.06}s")
     
             start = time.time()
             del network.state["opt_state"]
