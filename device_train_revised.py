@@ -515,7 +515,7 @@ for ticker in TICKERS:
                 print(f"written shard {i}")
 
  
-    
+    del network
     ## Cleaning cloud (1)
 
     storage_client_1 = storage.Client()
@@ -524,6 +524,8 @@ for ticker in TICKERS:
     
     for blob in blobs_1:
       blob.delete()
+    
+    
     
     ####
     # python to_hf_weights.py --input-ckpt ./step_383500 --config ./configs/6B_roto_256.json --output-path ./gpt-j-6B --cpu --dtype fp32
