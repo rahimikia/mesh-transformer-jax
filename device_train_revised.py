@@ -24,6 +24,7 @@ import jax.numpy as jnp
 from jax.experimental import maps
 from pathy import FluidPath, Pathy
 import torch
+import tensorflow as tf
 
 # TICKERS = ['AAPL', 'GE', 'IBM', 'INTC']
 # TICKERS = ['MSFT', 'PFE','PG', 'WMT']
@@ -991,23 +992,9 @@ for ticker in TICKERS:
         
         del network
         
-        
-
-       
-        import sys
-        def sizeof_fmt(num, suffix='B'):
-            ''' by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified'''
-            for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-                if abs(num) < 1024.0:
-                    return "%3.1f %s%s" % (num, unit, suffix)
-                num /= 1024.0
-            return "%.1f %s%s" % (num, 'Yi', suffix)
+        tf.tpu.experimental.initialize_tpu_system(tf.distribute.cluster_resolver.TPUClusterResolver())
         
         
-        for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()), key= lambda x: -x[1])[:10]:
-          print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-                
-                
         save_sharded_to_hf_format(input_ckpt, params, output_path, np_dtype, torch_dtype)
         save_config_to_hf_format(params, torch_dtype, output_path)
         print(
