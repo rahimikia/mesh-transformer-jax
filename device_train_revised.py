@@ -505,10 +505,7 @@ for ticker in TICKERS:
                 write_ckpt(network.state, f"gs://{bucket}/{model_dir}{suffix}/step_{ckpt_step}/", i)
                 print(f"written shard {i}")
 
-
-    del network
-    
-    
+ 
     
     ## Cleaning cloud (1)
 
@@ -991,7 +988,8 @@ for ticker in TICKERS:
         input_ckpt, config, output_path, np_dtype, torch_dtype = process_args_3(**args)
         # params = json.load(open(config))
         params["optimizer"] = optax.scale(0)
-    
+        
+        del network
         save_sharded_to_hf_format(input_ckpt, params, output_path, np_dtype, torch_dtype)
         save_config_to_hf_format(params, torch_dtype, output_path)
         print(
