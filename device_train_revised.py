@@ -434,7 +434,7 @@ for ticker in TICKERS:
                 step += 1
                 
                 
-            del network
+            # del network ###################################################
 
                 
     #### -------------------------------- Slim model -----------------------------------
@@ -490,8 +490,8 @@ for ticker in TICKERS:
             network = CausalTransformer(params)
     
             start = time.time()
-            network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1])
-            print(f"network loaded in {time.time() - start:.06}s")
+            # network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1]) ###################################################
+            # print(f"network loaded in {time.time() - start:.06}s")
     
             start = time.time()
             del network.state["opt_state"]
@@ -547,7 +547,7 @@ for ticker in TICKERS:
     parser.add_argument(
         "--input-ckpt",
         type=str,
-        required=True,
+        required=False,
         help='path to model checkpoint folder. Google storage can be used with "gs://bucket/path/step_{n}" format.',
         default = input_check_point_path,
         metavar="path",
@@ -557,7 +557,7 @@ for ticker in TICKERS:
     # )
     parser.add_argument(
         "--output-path",
-        required=True,
+        required=False,
         type=str,
         help='Full path to save checkpoint to. Google storage can be used with "gs://bucket/path" format.',
         default = output_check_point_path
