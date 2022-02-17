@@ -45,7 +45,7 @@ import torch
 # TICKERS = ['MRK', 'BEL_VZ', 'AIG', 'PEP', 'JNJ', 'XOM', 'ORCL', 'DIS', 'AMGN', 'AMZN', 'AXP', 'WAG_WBA', 'BMY', 'BPA_BP', 'CMCSA', 'CVS']
 # TICKERS = ['DD', 'GILD', 'GS', 'OXY', 'HD', 'MCD', 'MDT', 'MMM', 'BA', 'MWD_MS', 'NAN', 'QCOM', 'RY', 'SLB', 'TXN', 'UNH', 'UPS', 'USB']
 				
-TICKERS = ['AMZN', 'JNJ']
+TICKERS = ['AMZN']
 
 								
 
@@ -83,7 +83,7 @@ for ticker in TICKERS:
       "lr": 5e-5,
       "end_lr": 1e-5,
       "weight_decay": 0.1,
-      "total_steps": 5,
+      "total_steps": 72,
     
       "tpu_size": 8,
     
@@ -98,8 +98,8 @@ for ticker in TICKERS:
     
       "val_batches": 0,
       "val_every": 80,
-      "ckpt_every": 5,
-      "keep_every": 5,
+      "ckpt_every": 72,
+      "keep_every": 72,
     
       "name": model_name,
       "wandb_project": "mesh-transformer-jax",
@@ -552,9 +552,9 @@ for ticker in TICKERS:
         default = input_check_point_path,
         metavar="path",
     )
-    # parser.add_argument(
-    #     "--config", type=str, required=True, help="Config file location", metavar="path"
-    # )
+    parser.add_argument(
+        "--config", type=str, required=False, help="Config file location", metavar="path"
+    )
     parser.add_argument(
         "--output-path",
         required=False,
