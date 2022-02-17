@@ -108,118 +108,116 @@ for ticker in TICKERS:
     
     
     
-    # def parse_args():
-    #     # Parse command line arguments
-    #     parser = argparse.ArgumentParser(description="""
-    #     To use, download the full checkpoint archive, extract and upload to a GCS bucket, and set that as --tune-model-path
-    #     Modify the config file:
-    #         - set `model_dir` to where the checkpoints should be written during training
-    #         - set `train_set`, `val_set` to index files for your data
-    #         - set `tpu_size` to 8 (if on a v3-8)
-    #         - set `warmup_steps`, `anneal_steps`, `lr`, `end_lr` to the lr schedule for your finetuning run
-    #         - the global step will reset to 0, keep that in mind when writing your lr schedule
-    #         - set `name` to specify the name of the Weights & Biases run
-    #         - set `wandb_project` to specify the Weights & Biases project to log to
-    #     To prepare data in the expected data format:
-    #         - use the script `create_finetune_tfrecords.py` in this repo to create data in the expected format
-    #         - upload the .tfrecords files to GCS
-    #         - save their GCS paths to a index file under `data/`, see existing files for examples
-    #     """,
-    #     formatter_class=argparse.RawTextHelpFormatter)
-    #     # parser.add_argument("--config", type=str, default=None, help="Config file location")
-    #     parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project0/step_383500/step_383500/', help="Base model to finetune")
-    #     parser.add_argument("--fresh-opt", default=False, action="store_true", help="Use a newly initialized optimizer, ignoring any optimizer state saved in the base checkpoint")
+    def parse_args():
+        # Parse command line arguments
+        parser = argparse.ArgumentParser(description="""
+        To use, download the full checkpoint archive, extract and upload to a GCS bucket, and set that as --tune-model-path
+        Modify the config file:
+            - set `model_dir` to where the checkpoints should be written during training
+            - set `train_set`, `val_set` to index files for your data
+            - set `tpu_size` to 8 (if on a v3-8)
+            - set `warmup_steps`, `anneal_steps`, `lr`, `end_lr` to the lr schedule for your finetuning run
+            - the global step will reset to 0, keep that in mind when writing your lr schedule
+            - set `name` to specify the name of the Weights & Biases run
+            - set `wandb_project` to specify the Weights & Biases project to log to
+        To prepare data in the expected data format:
+            - use the script `create_finetune_tfrecords.py` in this repo to create data in the expected format
+            - upload the .tfrecords files to GCS
+            - save their GCS paths to a index file under `data/`, see existing files for examples
+        """,
+        formatter_class=argparse.RawTextHelpFormatter)
+        # parser.add_argument("--config", type=str, default=None, help="Config file location")
+        parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project0/step_383500/step_383500/', help="Base model to finetune")
+        parser.add_argument("--fresh-opt", default=False, action="store_true", help="Use a newly initialized optimizer, ignoring any optimizer state saved in the base checkpoint")
     
-    #     args = parser.parse_args()
-    #     return args
-    
-    
-    # def save(network, step, bucket, path, mp, aux=None, keep_n=3, delete_old=True):
-    #     assert path
-    #     client = storage.Client()
-    
-    #     if aux is None:
-    #         aux = {}
-    
-    #     try:
-    #         with open(f"gs://{bucket}/{path}/meta.json", "r") as f:
-    #             meta = json.load(f)
-    #     except:
-    #         # create metadata file
-    #         with open(f"gs://{bucket}/{path}/meta.json", "w") as f:
-    #             json.dump({
-    #                 "step": 0,
-    #                 "checkpoints": [],
-    #                 "aux": {}
-    #             }, f)
-    
-    #     # do sharded checkpoint writing
-    #     start = time.time()
-    #     res = []
-    #     for shard_id in range(mp):
-    #         write_ckpt(network.state, f"gs://{bucket}/{path}/step_{step}/", shard_id)
-    
-    #     print(f"Wrote checkpoint in {time.time() - start:.06}s")
-    
-    #     with open(f"gs://{bucket}/{path}/meta.json", "r") as f:
-    #         meta = json.load(f)
-    
-    #     meta["step"] = step
-    #     meta["checkpoints"].append(step)
-    #     all_aux = meta.get("aux", {})
-    
-    #     while len(meta["checkpoints"]) > keep_n:
-    #         ckpt_to_delete = meta["checkpoints"].pop(0)
-    
-    #         try:
-    #             del all_aux[str(ckpt_to_delete)]
-    #         except:
-    #             print(f"failed to delete the aux state for {step}")
-    
-    #         if delete_old:
-    #             print(f"deleting checkpoint {ckpt_to_delete}")
-    #             for blob in client.list_blobs(bucket, prefix=f"{path}/step_{ckpt_to_delete}/"):
-    #                 # print(f"deleting {blob.name}")
-    #                 assert path in blob.name
-    #                 blob.delete()
-    #         else:
-    #             print(f"keeping checkpoint {ckpt_to_delete}")
-    
-    #     all_aux[step] = aux
-    #     meta["aux"] = all_aux
-    
-    #     with open(f"gs://{bucket}/{path}/meta.json", "w") as f:
-    #         json.dump(meta, f)
+        args = parser.parse_args()
+        return args
     
     
-    # def train_step(network, data):
-    #     inputs = {
-    #         "obs": data[:, :, :-1],
-    #         "target": data[:, :, 1:],
-    #     }
+    def save(network, step, bucket, path, mp, aux=None, keep_n=3, delete_old=True):
+        assert path
+        client = storage.Client()
     
-    #     loss, last_loss, grad_norm, grad_norm_micro = network.train(inputs)
+        if aux is None:
+            aux = {}
     
-    #     return (
-    #         np.array(loss).mean(),
-    #         np.array(last_loss).mean(),
-    #         np.array(grad_norm).mean(),
-    #         np.array(grad_norm_micro).mean(),
-    #     )
+        try:
+            with open(f"gs://{bucket}/{path}/meta.json", "r") as f:
+                meta = json.load(f)
+        except:
+            # create metadata file
+            with open(f"gs://{bucket}/{path}/meta.json", "w") as f:
+                json.dump({
+                    "step": 0,
+                    "checkpoints": [],
+                    "aux": {}
+                }, f)
+    
+        # do sharded checkpoint writing
+        start = time.time()
+        res = []
+        for shard_id in range(mp):
+            write_ckpt(network.state, f"gs://{bucket}/{path}/step_{step}/", shard_id)
+    
+        print(f"Wrote checkpoint in {time.time() - start:.06}s")
+    
+        with open(f"gs://{bucket}/{path}/meta.json", "r") as f:
+            meta = json.load(f)
+    
+        meta["step"] = step
+        meta["checkpoints"].append(step)
+        all_aux = meta.get("aux", {})
+    
+        while len(meta["checkpoints"]) > keep_n:
+            ckpt_to_delete = meta["checkpoints"].pop(0)
+    
+            try:
+                del all_aux[str(ckpt_to_delete)]
+            except:
+                print(f"failed to delete the aux state for {step}")
+    
+            if delete_old:
+                print(f"deleting checkpoint {ckpt_to_delete}")
+                for blob in client.list_blobs(bucket, prefix=f"{path}/step_{ckpt_to_delete}/"):
+                    # print(f"deleting {blob.name}")
+                    assert path in blob.name
+                    blob.delete()
+            else:
+                print(f"keeping checkpoint {ckpt_to_delete}")
+    
+        all_aux[step] = aux
+        meta["aux"] = all_aux
+    
+        with open(f"gs://{bucket}/{path}/meta.json", "w") as f:
+            json.dump(meta, f)
     
     
-    # def eval_step(network, data):
-    #     inputs = {
-    #         "obs": data[:, :-1],
-    #         "target": data[:, 1:],
-    #     }
+    def train_step(network, data):
+        inputs = {
+            "obs": data[:, :, :-1],
+            "target": data[:, :, 1:],
+        }
     
-    #     out = network.eval(inputs)
-    #     loss = out["loss"]
+        loss, last_loss, grad_norm, grad_norm_micro = network.train(inputs)
     
-    #     return np.array(loss).mean()
+        return (
+            np.array(loss).mean(),
+            np.array(last_loss).mean(),
+            np.array(grad_norm).mean(),
+            np.array(grad_norm_micro).mean(),
+        )
     
     
+    def eval_step(network, data):
+        inputs = {
+            "obs": data[:, :-1],
+            "target": data[:, 1:],
+        }
+    
+        out = network.eval(inputs)
+        loss = out["loss"]
+    
+        return np.array(loss).mean()
     
     
     
@@ -233,291 +231,293 @@ for ticker in TICKERS:
     
     
     
-    # if __name__ == "__main__":
-    #     args = parse_args()
-    #     # params = json.load(open(args.config))
     
-    #     gradient_accumulation_steps = params.get("gradient_accumulation_steps", 1)
-    #     per_replica_batch = params["per_replica_batch"]
-    #     cores_per_replica = params["cores_per_replica"]
     
-    #     assert cores_per_replica <= 8
+    if __name__ == "__main__":
+        args = parse_args()
+        # params = json.load(open(args.config))
     
-    #     bucket = params["bucket"]
-    #     model_dir = params["model_dir"]
-    #     layers = params["layers"]
-    #     d_model = params["d_model"]
-    #     n_heads = params["n_heads"]
-    #     n_vocab = params["n_vocab"]
-    #     seq = params["seq"]
-    #     norm = params["norm"]
+        gradient_accumulation_steps = params.get("gradient_accumulation_steps", 1)
+        per_replica_batch = params["per_replica_batch"]
+        cores_per_replica = params["cores_per_replica"]
     
-    #     val_batches = params["val_batches"]
-    #     val_every = params["val_every"]
-    #     ckpt_every = params["ckpt_every"]
-    #     keep_every = params["keep_every"]
-    #     # eval_tasks = params["eval_harness_tasks"]
-    #     total_steps = params["total_steps"]
+        assert cores_per_replica <= 8
     
-    #     pe = params["pe"]
-    #     assert pe in ["fixed", "rotary", "t5"]
+        bucket = params["bucket"]
+        model_dir = params["model_dir"]
+        layers = params["layers"]
+        d_model = params["d_model"]
+        n_heads = params["n_heads"]
+        n_vocab = params["n_vocab"]
+        seq = params["seq"]
+        norm = params["norm"]
     
-    #     warmup_steps = params["warmup_steps"]
-    #     anneal_steps = params["anneal_steps"]
-    #     lr = params["lr"]
-    #     end_lr = params["end_lr"]
-    #     weight_decay = params["weight_decay"]
+        val_batches = params["val_batches"]
+        val_every = params["val_every"]
+        ckpt_every = params["ckpt_every"]
+        keep_every = params["keep_every"]
+        # eval_tasks = params["eval_harness_tasks"]
+        total_steps = params["total_steps"]
+    
+        pe = params["pe"]
+        assert pe in ["fixed", "rotary", "t5"]
+    
+        warmup_steps = params["warmup_steps"]
+        anneal_steps = params["anneal_steps"]
+        lr = params["lr"]
+        end_lr = params["end_lr"]
+        weight_decay = params["weight_decay"]
        
-    #     # alpha parameter for the exponential moving averages used to compute B_simple
-    #     noise_scale_alpha = params.get("noise_scale_alpha", 0.01)
+        # alpha parameter for the exponential moving averages used to compute B_simple
+        noise_scale_alpha = params.get("noise_scale_alpha", 0.01)
     
-    #     scheduler = util.gpt3_schedule(warmup_steps, anneal_steps, lr, end_lr)
+        scheduler = util.gpt3_schedule(warmup_steps, anneal_steps, lr, end_lr)
         
-    #     opt = optax.chain(
-    #         optax.scale(1 / gradient_accumulation_steps),
-    #         clip_by_global_norm(1),
-    #         optax.scale_by_adam(),
-    #         additive_weight_decay(weight_decay),
-    #         optax.scale(-1),
-    #         optax.scale_by_schedule(scheduler)
-    #     )
+        opt = optax.chain(
+            optax.scale(1 / gradient_accumulation_steps),
+            clip_by_global_norm(1),
+            optax.scale_by_adam(),
+            additive_weight_decay(weight_decay),
+            optax.scale(-1),
+            optax.scale_by_schedule(scheduler)
+        )
     
-    #     params["optimizer"] = opt
+        params["optimizer"] = opt
     
-    #     start = time.time()
-    #     tpu_size = jax.device_count()
-    #     if tpu_size < cores_per_replica:
-    #         msg = f"each shard needs a separate device, but device count ({tpu_size}) < shard count ({cores_per_replica})"
-    #         raise ValueError(msg)
-    #     print(f"jax devices: {tpu_size}")
-    #     print(f"jax runtime initialized in {time.time() - start:.06}s")
+        start = time.time()
+        tpu_size = jax.device_count()
+        if tpu_size < cores_per_replica:
+            msg = f"each shard needs a separate device, but device count ({tpu_size}) < shard count ({cores_per_replica})"
+            raise ValueError(msg)
+        print(f"jax devices: {tpu_size}")
+        print(f"jax runtime initialized in {time.time() - start:.06}s")
     
-    #     mesh_shape = (tpu_size // cores_per_replica, cores_per_replica)
-    #     devices = np.array(jax.devices()).reshape(mesh_shape)
+        mesh_shape = (tpu_size // cores_per_replica, cores_per_replica)
+        devices = np.array(jax.devices()).reshape(mesh_shape)
     
-    #     # pick initial ckpt - based on tuning vs train from scratch
+        # pick initial ckpt - based on tuning vs train from scratch
     
-    #     step = 0
-    #     initial_ckpt_state_path = None
-    #     train_loader = None
+        step = 0
+        initial_ckpt_state_path = None
+        train_loader = None
     
-    #     if args.tune_model_path:
-    #         print('`--tune_model_path` passed: we are beginning a fine-tuning run')
-    #         fine_tuning = True
-    #         initial_ckpt_state_path = args.tune_model_path
-    #     else:
-    #         print('`--tune_model_path` not passed: we are continuing a fine-tuning run from a checkpoint (or we are not fine-tuning)')
-    #         fine_tuning = False
-    #         initial_ckpt_model_dir = model_dir
-    #         initial_ckpt_path = f"gs://{bucket}/{initial_ckpt_model_dir}"
-    #         meta_path = f"{initial_ckpt_path}/meta.json"
+        if args.tune_model_path:
+            print('`--tune_model_path` passed: we are beginning a fine-tuning run')
+            fine_tuning = True
+            initial_ckpt_state_path = args.tune_model_path
+        else:
+            print('`--tune_model_path` not passed: we are continuing a fine-tuning run from a checkpoint (or we are not fine-tuning)')
+            fine_tuning = False
+            initial_ckpt_model_dir = model_dir
+            initial_ckpt_path = f"gs://{bucket}/{initial_ckpt_model_dir}"
+            meta_path = f"{initial_ckpt_path}/meta.json"
     
-    #         try:
-    #             with open(meta_path, "r") as f:
-    #                 meta = json.load(f)
-    #             ckpt_step = meta["checkpoints"][-1]
-    #             initial_ckpt_state_path = f"{initial_ckpt_path}/step_{ckpt_step}/"
-    #             print(f"state will be restored from checkpoint {ckpt_step}")
+            try:
+                with open(meta_path, "r") as f:
+                    meta = json.load(f)
+                ckpt_step = meta["checkpoints"][-1]
+                initial_ckpt_state_path = f"{initial_ckpt_path}/step_{ckpt_step}/"
+                print(f"state will be restored from checkpoint {ckpt_step}")
     
-    #             step = ckpt_step
-    #             train_loader = meta['aux'][str(ckpt_step)].get("train_loader", None)
-    #         except NotFound:
-    #             # no checkpoint, start at zero
-    #             print(f"No checkpoint to load at {initial_ckpt_path}. Training from scratch.")
+                step = ckpt_step
+                train_loader = meta['aux'][str(ckpt_step)].get("train_loader", None)
+            except NotFound:
+                # no checkpoint, start at zero
+                print(f"No checkpoint to load at {initial_ckpt_path}. Training from scratch.")
     
-    #     if initial_ckpt_state_path:
-    #         print(f"path to load checkpoint from: {initial_ckpt_state_path}")
-    #     else:
-    #         print("not loading from a checkpoint")
+        if initial_ckpt_state_path:
+            print(f"path to load checkpoint from: {initial_ckpt_state_path}")
+        else:
+            print("not loading from a checkpoint")
     
-    #     # set up datasets
-    #     print("setting up datasets")
+        # set up datasets
+        print("setting up datasets")
     
-    #     train_dataset = TFRecordNewInputs(f"{params['train_set']}",
-    #                                       batch_size=(
-    #                                       gradient_accumulation_steps,
-    #                                       per_replica_batch * tpu_size // cores_per_replica),
-    #                                       sample_size=params['seq'],
-    #                                       restore_state=train_loader)
+        train_dataset = TFRecordNewInputs(f"{params['train_set']}",
+                                          batch_size=(
+                                          gradient_accumulation_steps,
+                                          per_replica_batch * tpu_size // cores_per_replica),
+                                          sample_size=params['seq'],
+                                          restore_state=train_loader)
     
     
-    #     global_val_batch = per_replica_batch * tpu_size // cores_per_replica
+        global_val_batch = per_replica_batch * tpu_size // cores_per_replica
     
-    #     val_sets = {}
+        val_sets = {}
     
-    #     for k, v in params["val_set"].items():
-    #         val_sets[k] = TFRecordNewInputs(
-    #             f"data/{v}", batch_size=(global_val_batch,), sample_size=seq
-    #         )
+        for k, v in params["val_set"].items():
+            val_sets[k] = TFRecordNewInputs(
+                f"data/{v}", batch_size=(global_val_batch,), sample_size=seq
+            )
     
-    #     # tok/sec metrics
-    #     sequences_per_step = gradient_accumulation_steps * (per_replica_batch * tpu_size // cores_per_replica)
-    #     tokens_per_step = params['seq'] * sequences_per_step
+        # tok/sec metrics
+        sequences_per_step = gradient_accumulation_steps * (per_replica_batch * tpu_size // cores_per_replica)
+        tokens_per_step = params['seq'] * sequences_per_step
     
-    #     # load + run
-    #     with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
-    #         print("initializing network")
-    #         network = CausalTransformer(params)
+        # load + run
+        with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
+            print("initializing network")
+            network = CausalTransformer(params)
     
-    #         if initial_ckpt_state_path:
-    #             print("loading network")
-    #             if fine_tuning:
-    #                 # get the scheduler step stored in the just-initialized optimizer
-    #                 # should be zero
-    #                 init_sched_state = network.state["opt_state"][-1]
+            if initial_ckpt_state_path:
+                print("loading network")
+                if fine_tuning:
+                    # get the scheduler step stored in the just-initialized optimizer
+                    # should be zero
+                    init_sched_state = network.state["opt_state"][-1]
     
-    #             start = time.time()
-    #             network.state = read_ckpt(network.state, initial_ckpt_state_path, devices.shape[1], load_opt=(not args.fresh_opt))
+                start = time.time()
+                network.state = read_ckpt(network.state, initial_ckpt_state_path, devices.shape[1], load_opt=(not args.fresh_opt))
     
-    #             if fine_tuning:
-    #                 # overwrite the loaded scheduler step with zeros
-    #                 # this makes fine-tuning use the lr schedule in
-    #                 network.state["opt_state"][-1] = init_sched_state
+                if fine_tuning:
+                    # overwrite the loaded scheduler step with zeros
+                    # this makes fine-tuning use the lr schedule in
+                    network.state["opt_state"][-1] = init_sched_state
     
-    #             print(f"network loaded in {time.time() - start:.06}s")
+                print(f"network loaded in {time.time() - start:.06}s")
     
-    #         print('compiling train fn')
-    #         start = time.time()
-    #         loss, last_loss, grad_norm, grad_norm_micro = train_step(
-    #             network, train_dataset.get_samples()
-    #         )
-    #         step += 1
-    #         print(f"Train fn compiled in {time.time() - start:.06}s")
+            print('compiling train fn')
+            start = time.time()
+            loss, last_loss, grad_norm, grad_norm_micro = train_step(
+                network, train_dataset.get_samples()
+            )
+            step += 1
+            print(f"Train fn compiled in {time.time() - start:.06}s")
     
-    #         print('compiling eval fn')
-    #         start = time.time()
-    #         for val_set in val_sets.values():
-    #             eval_step(network, val_set.get_samples())
-    #             val_set.reset()
-    #         print(f"Eval fn compiled in {time.time() - start:.06}s")
+            print('compiling eval fn')
+            start = time.time()
+            for val_set in val_sets.values():
+                eval_step(network, val_set.get_samples())
+                val_set.reset()
+            print(f"Eval fn compiled in {time.time() - start:.06}s")
     
-    #         # project = params.get("wandb_project", "mesh-transformer-jax")
-    #         # wandb.init(project=project, name=params["name"], config=params)
+            # project = params.get("wandb_project", "mesh-transformer-jax")
+            # wandb.init(project=project, name=params["name"], config=params)
     
-    #         G_noise_avg = None
-    #         S_noise_avg = None
-    #         print('step1: ' + str(step))
-    #         while True:
-    #             if (step % ckpt_every == 1) or step == total_steps:
-    #                 print(f"saving a checkpoint for step {step}")
-    #                 save(network, step, bucket, model_dir,
-    #                      mp=cores_per_replica,
-    #                      aux={"train_loader": train_dataset.get_state()},
-    #                      delete_old=True,
-    #                      )
+            G_noise_avg = None
+            S_noise_avg = None
+            print('step1: ' + str(step))
+            while True:
+                if (step % ckpt_every == 1) or step == total_steps:
+                    print(f"saving a checkpoint for step {step}")
+                    save(network, step, bucket, model_dir,
+                         mp=cores_per_replica,
+                         aux={"train_loader": train_dataset.get_state()},
+                         delete_old=True,
+                         )
     
-    #             if step % val_every == 1:  # 1 because we've already taken a step to compile train fn
-    #                 for name, val_set in val_sets.items():
-    #                     val_loss = []
-    #                     for i, _ in tqdm(zip(val_set.sample_once(), range(val_batches)),
-    #                                      desc=f"validation for step {step}, set {name}",
-    #                                      total=val_batches):
-    #                         val_loss.append(eval_step(network, i))
-    #                     val_set.reset()
+                if step % val_every == 1:  # 1 because we've already taken a step to compile train fn
+                    for name, val_set in val_sets.items():
+                        val_loss = []
+                        for i, _ in tqdm(zip(val_set.sample_once(), range(val_batches)),
+                                         desc=f"validation for step {step}, set {name}",
+                                         total=val_batches):
+                            val_loss.append(eval_step(network, i))
+                        val_set.reset()
     
-    #                     val_loss = np.array(val_loss).mean()
-    #                     print(f"validation loss for step {step}, set {name}: {val_loss}")
+                        val_loss = np.array(val_loss).mean()
+                        print(f"validation loss for step {step}, set {name}: {val_loss}")
     
-    #                     # wandb.log({f'val/loss_{name}': float(val_loss)}, step)
-    #             print('step2: ' + str(step))
-    #             if step == total_steps:
-    #                 print("training completed!")
-    #                 # exit()
-    #                 break
+                        # wandb.log({f'val/loss_{name}': float(val_loss)}, step)
+                print('step2: ' + str(step))
+                if step == total_steps:
+                    print("training completed!")
+                    # exit()
+                    break
                 
-    #             # continue
+                # continue
               
-    #             # start = time.time()
-    #             # loss, last_loss, grad_norm, grad_norm_micro = train_step(
-    #             #     network, train_dataset.get_samples()
-    #             # )
-    #             step += 1
+                # start = time.time()
+                # loss, last_loss, grad_norm, grad_norm_micro = train_step(
+                #     network, train_dataset.get_samples()
+                # )
+                step += 1
                 
                 
-    #         del network
+            del network
 
                 
-    # #### -------------------------------- Slim model -----------------------------------
+    #### -------------------------------- Slim model -----------------------------------
 
-    # def parse_args_2():
-    #     # Parse command line arguments
-    #     parser = argparse.ArgumentParser()
-    #     # parser.add_argument("--config", type=str, default=None, help="Config file location")
-    #     parser.add_argument("--ckpt-step", type=int, default=-1, help="Step number of the checkpoint to convert (if not specified, converts the most recent checkpoint)")
-    #     parser.add_argument("--f16", default=False, action="store_true", help="Convert to float16 (instead of bfloat16)")
+    def parse_args_2():
+        # Parse command line arguments
+        parser = argparse.ArgumentParser()
+        # parser.add_argument("--config", type=str, default=None, help="Config file location")
+        parser.add_argument("--ckpt-step", type=int, default=-1, help="Step number of the checkpoint to convert (if not specified, converts the most recent checkpoint)")
+        parser.add_argument("--f16", default=False, action="store_true", help="Convert to float16 (instead of bfloat16)")
     
-    #     args = parser.parse_args()
-    #     return args
+        args = parser.parse_args()
+        return args
 
-    # if __name__ == "__main__":
-    #     args = parse_args_2()
-    #     # params = json.load(open(args.config))
-    #     convert_fn = to_f16 if args.f16 else to_bf16
+    if __name__ == "__main__":
+        args = parse_args_2()
+        # params = json.load(open(args.config))
+        convert_fn = to_f16 if args.f16 else to_bf16
     
-    #     cores_per_replica = params["cores_per_replica"]
+        cores_per_replica = params["cores_per_replica"]
     
-    #     assert cores_per_replica <= 8
+        assert cores_per_replica <= 8
     
-    #     bucket = params["bucket"]
-    #     model_dir = params["model_dir"]
+        bucket = params["bucket"]
+        model_dir = params["model_dir"]
     
-    #     params["optimizer"] = optax.chain(
-    #         optax.scale(1),
-    #         clip_by_global_norm(1),
-    #         optax.scale_by_adam(),
-    #         optax.additive_weight_decay(0),
-    #         optax.scale(-1),
-    #         optax.scale_by_schedule(util.gpt3_schedule(0, 1, 0, 0))
-    #     )
+        params["optimizer"] = optax.chain(
+            optax.scale(1),
+            clip_by_global_norm(1),
+            optax.scale_by_adam(),
+            optax.additive_weight_decay(0),
+            optax.scale(-1),
+            optax.scale_by_schedule(util.gpt3_schedule(0, 1, 0, 0))
+        )
     
-    #     start = time.time()
-    #     print(f"jax devices: {jax.device_count()}")
-    #     print(f"jax runtime initialized in {time.time() - start:.06}s")
+        start = time.time()
+        print(f"jax devices: {jax.device_count()}")
+        print(f"jax runtime initialized in {time.time() - start:.06}s")
     
-    #     mesh_shape = (jax.device_count() // cores_per_replica, cores_per_replica)
-    #     devices = np.array(jax.devices()).reshape(mesh_shape)
+        mesh_shape = (jax.device_count() // cores_per_replica, cores_per_replica)
+        devices = np.array(jax.devices()).reshape(mesh_shape)
     
-    #     with open(f"gs://{bucket}/{model_dir}/meta.json", "r") as f:
-    #         meta = json.load(f)
+        with open(f"gs://{bucket}/{model_dir}/meta.json", "r") as f:
+            meta = json.load(f)
     
-    #     if args.ckpt_step > -1:
-    #         ckpt_step = args.ckpt_step
-    #     else:
-    #         ckpt_step = meta["checkpoints"][-1]
-    #     print(f"using checkpoint {ckpt_step}")
+        if args.ckpt_step > -1:
+            ckpt_step = args.ckpt_step
+        else:
+            ckpt_step = meta["checkpoints"][-1]
+        print(f"using checkpoint {ckpt_step}")
     
-    #     with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
-    #         network = CausalTransformer(params)
+        with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
+            network = CausalTransformer(params)
     
-    #         start = time.time()
-    #         network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1])
-    #         print(f"network loaded in {time.time() - start:.06}s")
+            start = time.time()
+            network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1])
+            print(f"network loaded in {time.time() - start:.06}s")
     
-    #         start = time.time()
-    #         del network.state["opt_state"]
+            start = time.time()
+            del network.state["opt_state"]
     
-    #         network.state["params"] = convert_fn(network.state["params"])
-    #         print(f"network converted in {time.time() - start:.06}s")
+            network.state["params"] = convert_fn(network.state["params"])
+            print(f"network converted in {time.time() - start:.06}s")
     
-    #         suffix = "_slim_f16" if args.f16 else "_slim"
+            suffix = "_slim_f16" if args.f16 else "_slim"
     
-    #         for i in range(cores_per_replica):
-    #             write_ckpt(network.state, f"gs://{bucket}/{model_dir}{suffix}/step_{ckpt_step}/", i)
-    #             print(f"written shard {i}")
+            for i in range(cores_per_replica):
+                write_ckpt(network.state, f"gs://{bucket}/{model_dir}{suffix}/step_{ckpt_step}/", i)
+                print(f"written shard {i}")
 
 
-    # del network
+    del network
     
     
     
-    # ## Cleaning cloud (1)
+    ## Cleaning cloud (1)
 
-    # storage_client_1 = storage.Client()
-    # bucket_1 = storage_client_1.get_bucket('nlp-project0')
-    # blobs_1 = bucket_1.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '/')
+    storage_client_1 = storage.Client()
+    bucket_1 = storage_client_1.get_bucket('nlp-project0')
+    blobs_1 = bucket_1.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '/')
     
-    # for blob in blobs_1:
-    #   blob.delete()
+    for blob in blobs_1:
+      blob.delete()
     
     ####
     # python to_hf_weights.py --input-ckpt ./step_383500 --config ./configs/6B_roto_256.json --output-path ./gpt-j-6B --cpu --dtype fp32
