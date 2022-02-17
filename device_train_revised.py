@@ -83,7 +83,7 @@ for ticker in TICKERS:
       "lr": 5e-5,
       "end_lr": 1e-5,
       "weight_decay": 0.1,
-      "total_steps": 72,
+      "total_steps": 5,
     
       "tpu_size": 8,
     
@@ -98,8 +98,8 @@ for ticker in TICKERS:
     
       "val_batches": 0,
       "val_every": 80,
-      "ckpt_every": 72,
-      "keep_every": 72,
+      "ckpt_every": 5,
+      "keep_every": 5,
     
       "name": model_name,
       "wandb_project": "mesh-transformer-jax",
