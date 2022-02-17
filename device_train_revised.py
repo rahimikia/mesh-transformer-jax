@@ -487,7 +487,7 @@ for ticker in TICKERS:
         print(f"using checkpoint {ckpt_step}")
     
         with jax.experimental.maps.mesh(devices, ('dp', 'mp')):
-            network = CausalTransformer(params)
+            # network = CausalTransformer(params)
     
             start = time.time()
             # network.state = read_ckpt(network.state, f"gs://{bucket}/{model_dir}/step_{ckpt_step}/", devices.shape[1]) ###################################################
