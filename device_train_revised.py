@@ -51,7 +51,7 @@ TICKERS = ['BAC']
 
 for ticker in TICKERS:
   print('Transforming:' + ticker)
-  for year in np.arange(2011,2019):
+  for year in np.arange(2015,2019):
     
     ### Model config (from json file).
 
