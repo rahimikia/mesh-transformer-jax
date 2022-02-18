@@ -12,7 +12,7 @@ from tfrecord_loader import TFRecordNewInputs
 from smart_open import open
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
-# from mesh_transformer.util import clip_by_global_norm, additive_weight_decay, to_bf16, to_f16
+from mesh_transformer.util import clip_by_global_norm, additive_weight_decay, to_bf16, to_f16
 
 
 
