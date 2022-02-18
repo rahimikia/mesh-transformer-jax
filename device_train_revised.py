@@ -45,8 +45,8 @@ from mesh_transformer.util import clip_by_global_norm, additive_weight_decay, to
 # TICKERS = ['MRK', 'BEL_VZ', 'AIG', 'PEP', 'JNJ', 'XOM', 'ORCL', 'DIS', 'AMGN', 'AMZN', 'AXP', 'WAG_WBA', 'BMY', 'BPA_BP', 'CMCSA', 'CVS']
 # TICKERS = ['DD', 'GILD', 'GS', 'OXY', 'HD', 'MCD', 'MDT', 'MMM', 'BA', 'MWD_MS', 'NAN', 'QCOM', 'RY', 'SLB', 'TXN', 'UNH', 'UPS', 'USB']
 				
-# TICKERS = ['AAPL', 'AIG', 'AMGN', 'AMZN', 'AXP']
-TICKERS = ['BAC', 'BEL_VZ', 'BMY', 'BPA_BP', 'BRK']
+TICKERS = ['AAPL', 'AIG', 'AMGN', 'AMZN', 'AXP']
+# TICKERS = ['BAC', 'BEL_VZ', 'BMY', 'BPA_BP', 'BRK']
 								
 
 for ticker in TICKERS:
