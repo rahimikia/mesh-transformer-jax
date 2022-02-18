@@ -47,11 +47,11 @@ from mesh_transformer.util import clip_by_global_norm, additive_weight_decay, to
 				
 # TICKERS = ['AAPL', 'AIG', 'AMGN', 'AMZN', 'AXP']
 # TICKERS = ['BAC', 'BEL_VZ', 'BMY', 'BPA_BP', 'BRK']
-TICKERS = ['AAPL']							
+TICKERS = ['BAC']							
 
 for ticker in TICKERS:
   print('Transforming:' + ticker)
-  for year in np.arange(2009,2019):
+  for year in np.arange(2011,2019):
     
     ### Model config (from json file).
 
