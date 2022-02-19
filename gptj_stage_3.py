@@ -170,11 +170,11 @@ anneal_steps_val = total_steps_val - warmup_steps_val
 
 
 
-bucket_2 = storage_client_x.get_bucket('nlp-project0')
-blobs_2 = bucket_2.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '_slim/')
+blobs_2 = bucket_x.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '_slim/')
 ax = list(blobs_2)
+print(ax[0])
 chptx = re.findall(r"\bstep_\w*/\b", str(ax[0]))[0]
-
+chptx = chptx[5]
 
 input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + chptx + '/'
 input_ckpt = Pathy.fluid(str(input_check_point_path))
