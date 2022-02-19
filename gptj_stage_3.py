@@ -148,9 +148,6 @@ ticker, year, np_dtype, torch_dtype = process_args(**argsX)
     
 
 
-input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_72/'
-input_ckpt = Pathy.fluid(str(input_check_point_path))
-
 
 
 output_check_point_path = 'gs://nlp-project0/finetuned_models/' + ticker + '/' + str(year) + '/'
@@ -170,6 +167,10 @@ blobs_x = bucket_x.get_blob('data/GPTJ_data/' + ticker + '/headlines_train_tf/ne
 total_steps_val = int(np.round(int(blobs_x.download_as_string())/16))
 warmup_steps_val = int(np.round(0.1*total_steps_val))
 anneal_steps_val = total_steps_val - warmup_steps_val
+
+input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + str(total_steps_val) + '/'
+input_ckpt = Pathy.fluid(str(input_check_point_path))
+
 
 
 
@@ -206,9 +207,9 @@ params = {
   ],
 
   "val_batches": 0,
-  "val_every": 80,
-  "ckpt_every": 72,
-  "keep_every": 72,
+  "val_every": total_steps_val+100,
+  "ckpt_every": total_steps_val,
+  "keep_every": total_steps_val,
 
   "name": model_name,
   "wandb_project": "mesh-transformer-jax",

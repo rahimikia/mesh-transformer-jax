@@ -103,9 +103,9 @@ params = {
   ],
 
   "val_batches": 0,
-  "val_every": 80,
-  "ckpt_every": 72,
-  "keep_every": 72,
+  "val_every": total_steps_val+100,
+  "ckpt_every": total_steps_val,
+  "keep_every": total_steps_val,
 
   "name": model_name,
   "wandb_project": "mesh-transformer-jax",
