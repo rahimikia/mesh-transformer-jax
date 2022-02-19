@@ -600,9 +600,9 @@ if __name__ == "__main__":
     
     save_sharded_to_hf_format(input_ckpt, params, output_path, np_dtype, torch_dtype)
     save_config_to_hf_format(params, torch_dtype, output_path)
-    print(
-        f"HF weights created in {(time.time() - start):.0f}s \"{args['output_path']}\""
-    )
+    # print(
+    #     f"HF weights created in {(time.time() - start):.0f}s \"{args['output_path']}\""
+    # )
 
 
 ## Cleaning cloud (2)
