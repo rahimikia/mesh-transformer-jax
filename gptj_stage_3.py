@@ -168,7 +168,15 @@ total_steps_val = int(np.round(int(blobs_x.download_as_string())/16))
 warmup_steps_val = int(np.round(0.1*total_steps_val))
 anneal_steps_val = total_steps_val - warmup_steps_val
 
-input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + str(total_steps_val) + '/'
+
+
+bucket_2 = storage_client_x.get_bucket('nlp-project0')
+blobs_2 = bucket_2.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/' + str(year) + '_slim/')
+ax = list(blobs_2)
+chptx = re.findall(r"\bstep_\w*/\b", str(ax[0]))[0]
+
+
+input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + chptx + '/'
 input_ckpt = Pathy.fluid(str(input_check_point_path))
 
 
