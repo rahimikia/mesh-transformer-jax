@@ -73,7 +73,7 @@ parser.add_argument(
 parser.add_argument(
     "--cpu",
     action="store_true",
-    default = False,
+    default = True,
     help="Run resharding on cpu instead of searching for jax device (i.e. gpu/tpu). Will default to cpu if jax wasn't installed with `+cuda110` option",
 )
 parser.add_argument(
@@ -104,7 +104,7 @@ def process_args(
     # config: Union[FluidPath, str],
     # output_path: Union[FluidPath, str],
     dtype: str = "fp16",
-    cpu: bool = False,
+    cpu: bool = True,
     ticker_name: str = '',
     year: int = '',
     **kwargs,
