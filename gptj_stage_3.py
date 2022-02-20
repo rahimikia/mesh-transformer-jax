@@ -164,7 +164,7 @@ model_name = ticker + '_' + str(year)
 storage_client_x = storage.Client()
 bucket_x = storage_client_x.get_bucket('nlp-project0')
 blobs_x = bucket_x.get_blob('data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.txt')
-total_steps_val = int(np.round(int(blobs_x.download_as_string())/16))
+total_steps_val = int(np.round(int(blobs_x.download_as_string())/8))
 warmup_steps_val = int(np.round(0.1*total_steps_val))
 anneal_steps_val = total_steps_val - warmup_steps_val
 
