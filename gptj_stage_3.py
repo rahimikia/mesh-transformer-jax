@@ -194,7 +194,7 @@ params = {
   "seq": 2048,
   "cores_per_replica": 8,
   "per_replica_batch": 1,
-  "gradient_accumulation_steps": 16,
+  "gradient_accumulation_steps": 8,
 
   "warmup_steps": warmup_steps_val,
   "anneal_steps": anneal_steps_val,
