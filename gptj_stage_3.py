@@ -174,7 +174,7 @@ blobs_2 = bucket_x.list_blobs(prefix = "finetuned_models_stage_1/" + ticker + '/
 ax = list(blobs_2)
 print(ax[0])
 chptx = re.findall(r"\bstep_\w*/\b", str(ax[0]))[0]
-chptx = chptx[5]
+chptx = re.findall(r'\d+',chptx)[0]
 
 input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + chptx + '/'
 input_ckpt = Pathy.fluid(str(input_check_point_path))
