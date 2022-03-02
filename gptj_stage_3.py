@@ -150,19 +150,19 @@ ticker, year, np_dtype, torch_dtype = process_args(**argsX)
 
 
 
-output_check_point_path = 'gs://nlp-project0/finetuned_models/' + ticker + '/' + str(year) + '/'
+output_check_point_path = 'gs://nlp-project1/finetuned_models/' + ticker + '/' + str(year) + '/'
 output_path = Pathy.fluid(str(output_check_point_path))
 output_path.mkdir(exist_ok=True)
 
 
 ### Model config (from json file).
-txt_train_path = 'gs://nlp-project0/data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords'
+txt_train_path = 'gs://nlp-project1/data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords'
 model_name = ticker + '_' + str(year)
 
  
 # GPT-J properties.
 storage_client_x = storage.Client()
-bucket_x = storage_client_x.get_bucket('nlp-project0')
+bucket_x = storage_client_x.get_bucket('nlp-project1')
 blobs_x = bucket_x.get_blob('data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.txt')
 total_steps_val = int(np.round(int(blobs_x.download_as_string())/4))
 warmup_steps_val = int(np.round(0.1*total_steps_val))
@@ -176,7 +176,7 @@ print(ax[0])
 chptx = re.findall(r"\bstep_\w*/\b", str(ax[0]))[0]
 chptx = re.findall(r'\d+',chptx)[0]
 
-input_check_point_path = 'gs://nlp-project0/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + chptx + '/'
+input_check_point_path = 'gs://nlp-project1/finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/step_' + chptx + '/'
 input_ckpt = Pathy.fluid(str(input_check_point_path))
 
 
@@ -205,7 +205,7 @@ params = {
 
   "tpu_size": 8,
 
-  "bucket": "nlp-project0",
+  "bucket": "nlp-project1",
   "model_dir": "finetuned_models_stage_1/" + ticker + '/' + str(year),
 
   "train_set": "foo.train.index",
@@ -608,7 +608,7 @@ if __name__ == "__main__":
 ## Cleaning cloud (2)
 
 storage_client_2 = storage.Client()
-bucket_2 = storage_client_2.get_bucket('nlp-project0')
+bucket_2 = storage_client_2.get_bucket('nlp-project1')
 blobs_2 = bucket_2.list_blobs(prefix = 'finetuned_models_stage_1/' + ticker + '/' + str(year) + '_slim/')
 
 for blob in blobs_2:
