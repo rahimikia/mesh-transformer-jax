@@ -35,7 +35,7 @@ def parse_args():
     """,
     formatter_class=argparse.RawTextHelpFormatter)
     # parser.add_argument("--config", type=str, default=None, help="Config file location")
-    parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project1/step_383500.tar/step_383500/step_383500/', help="Base model to finetune")
+    parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project1/step_383500.tar/step_383500/', help="Base model to finetune")
     
     parser.add_argument("--ticker_name", type=str, default = False, help="Ticker name")
     parser.add_argument("--year", type=str, default = False, help="Year")
