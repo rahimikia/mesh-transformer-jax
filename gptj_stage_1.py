@@ -35,7 +35,7 @@ def parse_args():
     """,
     formatter_class=argparse.RawTextHelpFormatter)
     # parser.add_argument("--config", type=str, default=None, help="Config file location")
-    parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project1/step_383500.tar/step_383500/step_383500/', help="Base model to finetune")
+    parser.add_argument("--tune-model-path", type=str, default = 'gs://nlp-project1/step_383500/step_383500/', help="Base model to finetune")
     
     parser.add_argument("--ticker_name", type=str, default = False, help="Ticker name")
     parser.add_argument("--year", type=str, default = False, help="Year")
@@ -51,14 +51,14 @@ year = args_fx.year
 
 
 ### Model config (from json file).
-txt_train_path = 'gs://nlp-project1/data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords'
+txt_train_path = 'gs://nlp-project1/data/GPTJ_data/NEW/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.tfrecords'
 model_name = ticker + '_' + str(year)
 
  
 # GPT-J properties.
 storage_client_x = storage.Client()
 bucket_x = storage_client_x.get_bucket('nlp-project1')
-blobs_x = bucket_x.get_blob('data/GPTJ_data/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.txt')
+blobs_x = bucket_x.get_blob('data/GPTJ_data/NEW/' + ticker + '/headlines_train_tf/news_headlines_train_' + str(year) + '.txt')
 total_steps_val = int(np.round(int(blobs_x.download_as_string())/4))
 warmup_steps_val = int(np.round(0.1*total_steps_val))
 anneal_steps_val = total_steps_val - warmup_steps_val
